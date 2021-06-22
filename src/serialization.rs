@@ -9,7 +9,7 @@ use flate2::bufread::DeflateDecoder;
 use std::io::Read;
 
 use crate::errors::Result;
-use crate::header::Header;
+use crate::header::{CompressionAlgorithm, Header};
 
 pub(crate) fn b64_encode<T: AsRef<[u8]>>(input: T) -> String {
     base64::encode_config(input, base64::URL_SAFE_NO_PAD)
@@ -32,7 +32,7 @@ pub(crate) fn from_jwt_part_claims<B: AsRef<[u8]>, T: DeserializeOwned>(
     header: &Header,
 ) -> Result<(T, Map<String, Value>)> {
     let s = match header.zip {
-        Some(_) => {
+        Some(CompressionAlgorithm::Deflate) => {
             #[cfg(feature = "compression")]
             {
                 let decoded = b64_decode(encoded)?;

@@ -6,6 +6,13 @@ use crate::algorithms::Algorithm;
 use crate::errors::Result;
 use crate::serialization::b64_decode;
 
+#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
+pub enum CompressionAlgorithm {
+    // Deflate
+    #[serde(rename="DEF")]
+    Deflate
+}
+
 /// A basic JWT header, the alg defaults to HS256 and typ is automatically
 /// set to `JWT`. All the other fields are optional.
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
@@ -19,7 +26,7 @@ pub struct Header {
     ///
     /// Defined in [RFC7516#4.1.3](https://tools.ietf.org/html/rfc7516#section-4.1.3).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub zip: Option<String>,
+    pub zip: Option<CompressionAlgorithm>,
     ///
     /// The algorithm used
     ///
