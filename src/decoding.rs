@@ -205,7 +205,7 @@ pub fn decode<T: DeserializeOwned>(
     match verify_signature(token, key, validation) {
         Err(e) => Err(e),
         Ok((header, claims)) => {
-            let (decoded_claims, claims_map): (T, _) = from_jwt_part_claims(claims)?;
+            let (decoded_claims, claims_map): (T, _) = from_jwt_part_claims(claims, &header)?;
             validate(&claims_map, validation)?;
 
             Ok(TokenData { header, claims: decoded_claims })
@@ -235,8 +235,7 @@ pub fn dangerous_insecure_decode<T: DeserializeOwned>(token: &str) -> Result<Tok
     let (_, message) = expect_two!(token.rsplitn(2, '.'));
     let (claims, header) = expect_two!(message.rsplitn(2, '.'));
     let header = Header::from_encoded(header)?;
-
-    let (decoded_claims, _): (T, _) = from_jwt_part_claims(claims)?;
+    let (decoded_claims, _): (T, _) = from_jwt_part_claims(claims, &header)?;
 
     Ok(TokenData { header, claims: decoded_claims })
 }
@@ -273,7 +272,7 @@ pub fn dangerous_insecure_decode_with_validation<T: DeserializeOwned>(
         return Err(new_error(ErrorKind::InvalidAlgorithm));
     }
 
-    let (decoded_claims, claims_map): (T, _) = from_jwt_part_claims(claims)?;
+    let (decoded_claims, claims_map): (T, _) = from_jwt_part_claims(claims, &header)?;
     validate(&claims_map, validation)?;
 
     Ok(TokenData { header, claims: decoded_claims })

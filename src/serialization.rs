@@ -3,7 +3,13 @@ use serde::ser::Serialize;
 use serde_json::map::Map;
 use serde_json::{from_slice, to_vec, Value};
 
+#[cfg(feature = "compression")]
+use flate2::bufread::DeflateDecoder;
+#[cfg(feature = "compression")]
+use std::io::Read;
+
 use crate::errors::Result;
+use crate::header::Header;
 
 pub(crate) fn b64_encode<T: AsRef<[u8]>>(input: T) -> String {
     base64::encode_config(input, base64::URL_SAFE_NO_PAD)
@@ -23,10 +29,27 @@ pub(crate) fn b64_encode_part<T: Serialize>(input: &T) -> Result<String> {
 /// run validation on it
 pub(crate) fn from_jwt_part_claims<B: AsRef<[u8]>, T: DeserializeOwned>(
     encoded: B,
+    header: &Header,
 ) -> Result<(T, Map<String, Value>)> {
-    let s = b64_decode(encoded)?;
+    let s = match header.zip {
+        Some(_) => {
+            #[cfg(feature = "compression")]
+            {
+                let decoded = b64_decode(encoded)?;
+                let mut deflater = DeflateDecoder::new(&decoded[..]);
+                let mut payload = String::new();
+                deflater.read_to_string(&mut payload).unwrap();
+                payload.as_bytes().to_vec()
+            }
+            #[cfg(not(feature = "compression"))]
+            unimplemented!("compressed payload but compression feature not enabled")
+        },
+        None => b64_decode(encoded)?
+    };
 
     let claims: T = from_slice(&s)?;
+
     let validation_map: Map<_, _> = from_slice(&s)?;
+
     Ok((claims, validation_map))
 }

@@ -15,6 +15,12 @@ pub struct Header {
     /// Defined in [RFC7515#4.1.9](https://tools.ietf.org/html/rfc7515#section-4.1.9).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub typ: Option<String>,
+    /// Compression algorithm, if any.
+    ///
+    /// Defined in [RFC7516#4.1.3](https://tools.ietf.org/html/rfc7516#section-4.1.3).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub zip: Option<String>,
+    ///
     /// The algorithm used
     ///
     /// Defined in [RFC7515#4.1.1](https://tools.ietf.org/html/rfc7515#section-4.1.1).
@@ -56,6 +62,7 @@ impl Header {
     pub fn new(algorithm: Algorithm) -> Self {
         Header {
             typ: Some("JWT".to_string()),
+            zip: None,
             alg: algorithm,
             cty: None,
             jku: None,
