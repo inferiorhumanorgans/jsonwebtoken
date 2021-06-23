@@ -9,6 +9,8 @@ use flate2::bufread::DeflateDecoder;
 use std::io::Read;
 
 use crate::errors::Result;
+#[cfg(not(feature = "compression"))]
+use crate::errors::{ErrorKind, new_error};
 use crate::header::{CompressionAlgorithm, Header};
 
 pub(crate) fn b64_encode<T: AsRef<[u8]>>(input: T) -> String {
@@ -42,7 +44,7 @@ pub(crate) fn from_jwt_part_claims<B: AsRef<[u8]>, T: DeserializeOwned>(
                 payload.as_bytes().to_vec()
             }
             #[cfg(not(feature = "compression"))]
-            unimplemented!("compressed payload but compression feature not enabled")
+            return Err(new_error(ErrorKind::InvalidCompressionAlgorithm))
         },
         None => b64_decode(encoded)?
     };

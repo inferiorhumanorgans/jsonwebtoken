@@ -65,6 +65,8 @@ pub enum ErrorKind {
     InvalidAlgorithm,
     /// When the Validation struct does not contain at least 1 algorithm
     MissingAlgorithm,
+    /// When the compression algorithm specified is unsupported
+    InvalidCompressionAlgorithm,
 
     // 3rd party errors
     /// An error happened when decoding some base64 text
@@ -94,6 +96,7 @@ impl StdError for Error {
             ErrorKind::InvalidAlgorithm => None,
             ErrorKind::InvalidAlgorithmName => None,
             ErrorKind::InvalidKeyFormat => None,
+            ErrorKind::InvalidCompressionAlgorithm => None,
             ErrorKind::Base64(ref err) => Some(err),
             ErrorKind::Json(ref err) => Some(err),
             ErrorKind::Utf8(ref err) => Some(err),
@@ -117,7 +120,8 @@ impl fmt::Display for Error {
             | ErrorKind::ImmatureSignature
             | ErrorKind::InvalidAlgorithm
             | ErrorKind::InvalidKeyFormat
-            | ErrorKind::InvalidAlgorithmName => write!(f, "{:?}", self.0),
+            | ErrorKind::InvalidAlgorithmName
+            | ErrorKind::InvalidCompressionAlgorithm => write!(f, "{:?}", self.0),
             ErrorKind::InvalidRsaKey(ref msg) => write!(f, "RSA key invalid: {}", msg),
             ErrorKind::Json(ref err) => write!(f, "JSON error: {}", err),
             ErrorKind::Utf8(ref err) => write!(f, "UTF-8 error: {}", err),
